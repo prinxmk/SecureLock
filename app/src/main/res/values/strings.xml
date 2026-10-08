@@ -1,0 +1,5 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="app_name">SecureLock</string>
+    <string name="accessibility_description">SecureLock uses accessibility events to monitor protected application launches and enforce the SecureLock authentication screen when enabled by the owner.</string>
+</resources>

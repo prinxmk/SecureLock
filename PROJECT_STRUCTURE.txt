@@ -1,0 +1,25 @@
+SecureLock/
+├── app/
+│   ├── build.gradle
+│   ├── proguard-rules.pro
+│   └── src/main/
+│       ├── AndroidManifest.xml
+│       ├── java/com/securelock/app/
+│       │   ├── BootReceiver.java
+│       │   ├── LockActivity.java
+│       │   ├── MainActivity.java
+│       │   ├── ScreenReceiver.java
+│       │   ├── SecureAccessibilityService.java
+│       │   ├── SecureLockPrefs.java
+│       │   └── SecureLockService.java
+│       └── res/
+│           ├── drawable/ic_securelock.xml
+│           ├── values/strings.xml
+│           ├── values/styles.xml
+│           └── xml/accessibility_service_config.xml
+├── .github/workflows/build-apk.yml
+├── build.gradle
+├── gradle.properties
+├── settings.gradle
+├── README.md
+└── SECURITY_NOTES.md
