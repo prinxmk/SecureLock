@@ -1,47 +1,14 @@
 package com.securelock.app;
-
-import android.app.Notification;
-import android.app.NotificationChannel;
-import android.app.NotificationManager;
-import android.app.Service;
-import android.content.Intent;
-import android.os.Build;
-import android.os.IBinder;
-
+import android.app.*;import android.content.*;import android.os.*;
 public class SecureLockService extends Service {
-    private static final String CHANNEL_ID = "securelock_security";
-    private static final int NOTIFICATION_ID = 4101;
-
-    @Override
-    public void onCreate() {
-        super.onCreate();
-        createChannel();
-        Notification notification = new Notification.Builder(this, CHANNEL_ID)
-            .setContentTitle("SecureLock is active")
-            .setContentText("Security monitoring is running.")
-            .setSmallIcon(com.securelock.app.R.drawable.ic_securelock)
-            .setOngoing(true)
-            .build();
-        startForeground(NOTIFICATION_ID, notification);
-    }
-
-    @Override
-    public int onStartCommand(Intent intent, int flags, int startId) {
-        return START_STICKY;
-    }
-
-    private void createChannel() {
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
-            NotificationChannel channel = new NotificationChannel(
-                CHANNEL_ID, "SecureLock Security", NotificationManager.IMPORTANCE_LOW);
-            channel.setDescription("Persistent SecureLock security status");
-            NotificationManager nm = getSystemService(NotificationManager.class);
-            if (nm != null) nm.createNotificationChannel(channel);
-        }
-    }
-
-    @Override
-    public IBinder onBind(Intent intent) {
-        return null;
-    }
+ private static final String CHANNEL="securelock_status";private static final int ID=4101;private boolean registered=false,wasOff=false;
+ private final BroadcastReceiver screen=new BroadcastReceiver(){@Override public void onReceive(Context c,Intent i){if(i==null||i.getAction()==null)return;String a=i.getAction();SecureLockPrefs.event(SecureLockService.this,"Screen event: "+a);if(Intent.ACTION_SCREEN_OFF.equals(a)){wasOff=true;if(SecureLockPrefs.isEnabled(SecureLockService.this)&&SecureLockPrefs.screenLockEnabled(SecureLockService.this))getSharedPreferences("runtime",0).edit().putBoolean("pending",true).apply();}else if(Intent.ACTION_SCREEN_ON.equals(a)){boolean pending=getSharedPreferences("runtime",0).getBoolean("pending",false);if(wasOff&&pending&&SecureLockPrefs.isEnabled(SecureLockService.this)&&SecureLockPrefs.hasPin(SecureLockService.this)){getSharedPreferences("runtime",0).edit().putBoolean("pending",false).apply();LockActivity.requestLaunch(SecureLockService.this,"screen_on_after_off");}wasOff=false;}}};
+ @Override public void onCreate(){super.onCreate();createChannel();startForeground(ID,notification("Starting security monitor"));registerScreen();SecureLockPrefs.recordServiceStart(this);SecureLockPrefs.event(this,"Foreground service started; screen receiver registered");getSystemService(NotificationManager.class).notify(ID,notification("Security monitoring is running"));}
+ @Override public int onStartCommand(Intent i,int flags,int id){SecureLockPrefs.event(this,"Service onStartCommand received");return START_STICKY;}
+ private void registerScreen(){if(registered)return;IntentFilter f=new IntentFilter();f.addAction(Intent.ACTION_SCREEN_OFF);f.addAction(Intent.ACTION_SCREEN_ON);f.addAction(Intent.ACTION_USER_PRESENT);try{registerReceiver(screen,f);registered=true;}catch(Exception e){SecureLockPrefs.event(this,"Screen receiver registration failed");}}
+ private void createChannel(){if(Build.VERSION.SDK_INT>=26){NotificationChannel c=new NotificationChannel(CHANNEL,"SecureLock status",NotificationManager.IMPORTANCE_LOW);c.setDescription("Persistent SecureLock service status");getSystemService(NotificationManager.class).createNotificationChannel(c);}}
+ private Notification notification(String body){Intent open=new Intent(this,MainActivity.class);int fl=PendingIntent.FLAG_UPDATE_CURRENT;if(Build.VERSION.SDK_INT>=23)fl|=PendingIntent.FLAG_IMMUTABLE;PendingIntent pi=PendingIntent.getActivity(this,0,open,fl);Notification.Builder b=Build.VERSION.SDK_INT>=26?new Notification.Builder(this,CHANNEL):new Notification.Builder(this);return b.setContentTitle("SecureLock is active").setContentText(body).setSmallIcon(R.drawable.ic_securelock).setContentIntent(pi).setOngoing(true).build();}
+ @Override public void onTaskRemoved(Intent root){SecureLockPrefs.event(this,"Service task removed");super.onTaskRemoved(root);}
+ @Override public void onDestroy(){if(registered)try{unregisterReceiver(screen);}catch(Exception ignored){}SecureLockPrefs.event(this,"Service onDestroy called");super.onDestroy();}
+ @Override public IBinder onBind(Intent i){return null;}
 }

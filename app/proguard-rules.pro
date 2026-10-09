@@ -1,1 +1,1 @@
-# SecureLock currently has no custom ProGuard rules.
+# No custom rules yet.

@@ -1,20 +1,3 @@
 package com.securelock.app;
-
-import android.content.BroadcastReceiver;
-import android.content.Context;
-import android.content.Intent;
-import android.os.Build;
-
-public class BootReceiver extends BroadcastReceiver {
-    @Override
-    public void onReceive(Context context, Intent intent) {
-        if (!SecureLockPrefs.bootEnabled(context)) return;
-
-        Intent service = new Intent(context, SecureLockService.class);
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
-            context.startForegroundService(service);
-        } else {
-            context.startService(service);
-        }
-    }
-}
+import android.content.BroadcastReceiver;import android.content.Context;import android.content.Intent;import android.os.Build;
+public class BootReceiver extends BroadcastReceiver { @Override public void onReceive(Context c,Intent i){String a=i==null?"unknown":i.getAction();SecureLockPrefs.boot(c,a==null?"unknown":a);Intent s=new Intent(c,SecureLockService.class);s.setAction("BOOT_START");try{if(Build.VERSION.SDK_INT>=26)c.startForegroundService(s);else c.startService(s);}catch(RuntimeException e){SecureLockPrefs.event(c,"Boot service start failed: "+e.getClass().getSimpleName());}} }
