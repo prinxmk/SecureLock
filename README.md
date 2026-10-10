@@ -29,3 +29,5 @@ The package name is unchanged. If Android accepts the signing key, install over 
 
 ## Limitations
 SecureLock is an additional application-level layer, not the system credential screen. Ordinary apps cannot disable Home/Recents, silently re-enable Accessibility, or guarantee an Activity launches over all Android screens. Boot delivery may be delayed or blocked by OEM firmware. For stronger kiosk controls, Device Owner provisioning is a separate future path.
+
+Build configuration note: `minSdk 28` (Android 9+) and `targetSdk 33` to resolve the expired-target-SDK release lint error in the supplied GitHub Actions build. This does not guarantee compatibility of every background-start or lock-screen behavior on all Android versions.
